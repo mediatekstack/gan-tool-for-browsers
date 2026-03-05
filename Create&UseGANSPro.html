@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create and Use GANs Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root { --bg: #0f172a; --panel: #1e293b; --accent: #3b82f6; --text: #f8fafc; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        body { font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; max-width: 950px; margin: auto; }
+        h1 { text-align: center; margin-bottom: 5px; color: var(--accent); letter-spacing: 1px; }
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #334155; }
+        .box { background: var(--panel); padding: 25px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; text-align: left; margin-bottom: 15px; }
+        label { font-size: 13px; margin-bottom: 8px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input[type="number"], input[type="file"] { padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #020617; color: white; font-size: 15px; width: 100%; box-sizing: border-box; transition: border-color 0.2s; }
+        select:focus, input:focus { outline: none; border-color: var(--accent); }
+        button { background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; transition: all 0.2s; width: 100%; margin-top: 10px; letter-spacing: 0.5px; }
+        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        button:active { transform: translateY(0px); }
+        button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; transform: none; }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-video { background: #7c3aed; }
+        .canvas-container { display: flex; justify-content: center; margin: 25px 0; }
+        canvas { border: 3px solid #334155; border-radius: 12px; background: #000; display: block; image-rendering: auto; max-width: 100%; height: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; background: #020617; padding: 20px; border-radius: 12px; font-family: 'Roboto Mono', monospace; font-size: 15px; border: 1px solid #334155; margin-top: 20px; align-items: center; }
+        .dash-item { display: flex; flex-direction: column; align-items: center; }
+        .dash-label { font-size: 11px; color: #94a3b8; margin-bottom: 5px; text-align: center; }
+        .dash-value { font-weight: bold; font-size: 16px; }
+        .log-text { color: var(--warning); font-family: 'Roboto Mono', monospace; text-align: center; margin-top: 15px; min-height: 25px; font-weight: 600; }
+        .timer { color: #c084fc; }
+        .etr { color: #2dd4bf; }
+        .controls-row { display: flex; gap: 10px; margin-top: 10px; width: 100%; }
+        option.extreme { color: #ef4444; font-weight: bold; }
+        .watermark-footer { text-align: center; color: #87CEFA; margin-top: 30px; font-weight: bold; font-size: 14px; letter-spacing: 1px; }
+        .epoch-hint { font-size: 11px; color: #6ee7b7; margin-top: 5px; min-height: 16px; }
+        small.hint { color: #64748b; font-size: 11px; margin-top: 3px; }
+        #videoProgressBox { display: none; background: #020617; border: 1px solid #7c3aed; border-radius: 10px; padding: 14px 20px; margin-top: 12px; color: #c4b5fd; font-family: 'Roboto Mono', monospace; font-size: 13px; text-align: center; }
+        #themePicker { position: fixed; top: 18px; right: 18px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        #themeToggleBtn { background: #1e293b; border: 1px solid #475569; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s; }
+        #themeToggleBtn:hover { transform: scale(1.15); }
+        #themePanel { display: none; background: #1e293b; border: 1px solid #475569; border-radius: 14px; padding: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.55); min-width: 160px; }
+        #themePanel.open { display: block; }
+        .theme-label { font-size: 11px; color: #94a3b8; margin-bottom: 8px; text-align: center; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+        .theme-swatches { display: grid; grid-template-columns: repeat(4, 30px); gap: 7px; margin-bottom: 10px; justify-content: center; }
+        .swatch { width: 30px; height: 30px; border-radius: 7px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+        .swatch:hover, .swatch.active { border-color: #fff; transform: scale(1.18); }
+        .theme-custom { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; border-top: 1px solid #334155; padding-top: 10px; }
+        .custom-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #94a3b8; }
+        .custom-row input[type="color"] { width: 34px; height: 26px; padding: 1px; border-radius: 5px; border: 1px solid #475569; background: #020617; cursor: pointer; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- Theme Picker -->
+    <div id="themePicker">
+        <button id="themeToggleBtn">🎨</button>
+        <div id="themePanel">
+            <div class="theme-label" data-i18n="themeTitle">Theme</div>
+            <div class="theme-swatches">
+                <div class="swatch active" data-bg="#0f172a" data-panel="#1e293b" data-accent="#3b82f6" style="background:linear-gradient(135deg,#0f172a 50%,#3b82f6 50%)" data-i18n-title="swatchBlue"></div>
+                <div class="swatch" data-bg="#0f0f0f" data-panel="#1a1a1a" data-accent="#a855f7" style="background:linear-gradient(135deg,#0f0f0f 50%,#a855f7 50%)" data-i18n-title="swatchPurple"></div>
+                <div class="swatch" data-bg="#0d1a0d" data-panel="#122212" data-accent="#10b981" style="background:linear-gradient(135deg,#0d1a0d 50%,#10b981 50%)" data-i18n-title="swatchGreen"></div>
+                <div class="swatch" data-bg="#1a0a00" data-panel="#2a1200" data-accent="#f97316" style="background:linear-gradient(135deg,#1a0a00 50%,#f97316 50%)" data-i18n-title="swatchOrange"></div>
+                <div class="swatch" data-bg="#1a000a" data-panel="#2a0012" data-accent="#f43f5e" style="background:linear-gradient(135deg,#1a000a 50%,#f43f5e 50%)" data-i18n-title="swatchRed"></div>
+                <div class="swatch" data-bg="#00141a" data-panel="#002a35" data-accent="#06b6d4" style="background:linear-gradient(135deg,#00141a 50%,#06b6d4 50%)" data-i18n-title="swatchCyan"></div>
+                <div class="swatch" data-bg="#0a0a1a" data-panel="#14142e" data-accent="#eab308" style="background:linear-gradient(135deg,#0a0a1a 50%,#eab308 50%)" data-i18n-title="swatchYellow"></div>
+                <div class="swatch" data-bg="#f1f5f9" data-panel="#e2e8f0" data-accent="#3b82f6" data-text="#0f172a" style="background:linear-gradient(135deg,#e2e8f0 50%,#3b82f6 50%)" data-i18n-title="swatchLight"></div>
+            </div>
+            <div class="theme-custom">
+                <div class="theme-label" style="margin-bottom:4px;" data-i18n="themeCustom">Custom</div>
+                <div class="custom-row"><input type="color" id="cpBg" value="#0f172a"><span data-i18n="themeBackground">Background</span></div>
+                <div class="custom-row"><input type="color" id="cpPanel" value="#1e293b"><span data-i18n="themePanel">Panel</span></div>
+                <div class="custom-row"><input type="color" id="cpAccent" value="#3b82f6"><span data-i18n="themeAccent">Accent</span></div>
+                <div class="custom-row"><input type="color" id="cpText" value="#f8fafc"><span data-i18n="themeText">Text</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-controls">
+        <h1 data-i18n="titleTxt">Create and Use GANs Pro</h1>
+        <select id="langSelector" style="width: auto; padding: 8px 12px;">
+            <option value="en">🇺🇸 English (US)</option>
+            <option value="pt">🇧🇷 Português (BR)</option>
+        </select>
+    </div>
+
+    <div class="box">
+        <h3 data-i18n="settingsTitle" style="margin-top:0; border-bottom:1px solid #334155; padding-bottom:15px;">1. Training Configuration</h3>
+
+        <!-- Row 1 -->
+        <div class="grid-4">
+            <div class="input-group">
+                <label data-i18n="lblRes">Target Resolution</label>
+                <select id="resSelect">
+                    <option value="1" data-i18n-opt="opt1px">1x1 (Pixel)</option>
+                    <option value="2">2x2</option><option value="4">4x4</option>
+                    <option value="8">8x8</option><option value="16">16x16</option>
+                    <option value="32" selected>32x32</option><option value="64">64x64</option>
+                    <option value="128">128x128</option><option value="256">256x256</option>
+                    <option class="extreme" value="512">512x512</option>
+                    <option class="extreme" value="1024">1024x1024</option>
+                </select>
+                <div class="epoch-hint" id="epochHint"></div>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblEpochs">Training Cycles</label>
+                <input type="number" id="epochsInput" value="2000" min="50" step="50">
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblComplexity">NN Complexity</label>
+                <select id="complexitySelect">
+                    <option value="32"  data-i18n-opt="complexBasic">Basic (Fast)</option>
+                    <option value="64" selected data-i18n-opt="complexStandard">Standard</option>
+                    <option value="128" data-i18n-opt="complexAdvanced">Advanced (Slow)</option>
+                    <option value="256" data-i18n-opt="complexExtreme">Extreme</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblDataset">Training Dataset</label>
+                <input type="file" id="uploadImages" accept="image/*" multiple style="padding-top:8px;">
+            </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="grid-4">
+            <div class="input-group">
+                <label data-i18n="lblGenLR">Generator LR</label>
+                <select id="genLRSelect">
+                    <option value="0.001"   data-i18n-opt="lrHigh">High (0.001)</option>
+                    <option value="0.0002" selected data-i18n-opt="lrMod">Moderate (0.0002)</option>
+                    <option value="0.00005" data-i18n-opt="lrLow">Low (0.00005)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblColor">Color Mode</label>
+                <select id="colorSelect">
+                    <option value="rgb" selected data-i18n-opt="colorRGB">Full RGB</option>
+                    <option value="gray" data-i18n-opt="colorGray">Grayscale (B&amp;W)</option>
+                    <option value="ycbcr">YCbCr</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblInterval">Preview Interval</label>
+                <input type="number" id="intervalInput" value="10" min="1" max="500">
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblNNCodec">NN Image Codec</label>
+                <select id="nnCodecSelect">
+                    <option value="tanh" selected data-i18n-opt="codecTanh">tanh [-1,1] · Standard</option>
+                    <option value="sigmoid" data-i18n-opt="codecSigmoid">sigmoid [0,1] · Lighter/Faster</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 3: Judge + auto-pause -->
+        <div class="grid-4">
+            <div class="input-group">
+                <label data-i18n="lblJudgeSpeed">⚖️ Judge LR Speed</label>
+                <input type="number" id="judgeLRMult" value="0.5" min="0.1" max="2.0" step="0.1">
+                <small class="hint" data-i18n="hintJudgeSpeed">0.1 – 2.0 · Lower = Judge learns slower</small>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblBlindness">🙈 Judge Blindness</label>
+                <input type="number" id="judgeDropout" value="0.3" min="0.0" max="0.7" step="0.05">
+                <small class="hint" data-i18n="hintBlindness">0.0 – 0.70 · Higher = misses more fakes</small>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lblAutoPause">⏸️ Auto-Pause % (0=off)</label>
+                <input type="number" id="autoPauseThresh" value="53" min="0" max="100" step="1">
+                <small class="hint" data-i18n="hintAutoPause">0 – 100 · Pauses when noise prob exceeds this</small>
+            </div>
+            <div></div>
+        </div>
+
+        <div class="controls-row">
+            <button id="btnTrain" data-i18n="btnTrain">Initialize Training Session</button>
+            <button id="btnPause" class="btn-warning" disabled style="flex:0.5;" data-i18n="btnPause">⏸️ Pause</button>
+            <button id="btnSavePreview" class="btn-success" disabled style="flex:0.5;" data-i18n="btnSavePreview">📸 Save Preview</button>
+            <button id="btnStop" class="btn-danger" disabled style="flex:0.5;" data-i18n="btnStop">⏹️ Stop</button>
+        </div>
+        <div class="controls-row" style="align-items:flex-end; gap:10px;">
+            <button id="btnDownloadVideo" class="btn-video" disabled data-i18n="btnDownloadVideo" style="flex:2;">🎬 Download Training Video</button>
+            <div class="input-group" style="margin-bottom:0; flex:1; min-width:130px;">
+                <label style="font-size:11px;">VIDEO CODEC</label>
+                <select id="videoCodecSelect">
+                    <option value="vp9">VP9 — Best quality/size</option>
+                    <option value="vp8">VP8 — Lightweight</option>
+                    <option value="h264">H.264 — Widely compatible</option>
+                    <option value="h265">H.265 — Smallest file (Safari)</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-bottom:0; flex:1; min-width:130px;">
+                <label style="font-size:11px;">VIDEO QUALITY</label>
+                <select id="videoQualitySelect">
+                    <option value="low">Low — 1.5 Mbps · Smallest</option>
+                    <option value="medium">Medium — 4 Mbps · Balanced</option>
+                    <option value="high" selected>High — 8 Mbps · Sharp</option>
+                    <option value="ultra">Ultra — 16 Mbps · Lossless-like</option>
+                </select>
+            </div>
+        </div>
+        <div id="videoProgressBox">🎬 <span id="videoProgressTxt" data-i18n="videoPreparing">Preparing video...</span></div>
+
+        <div id="log" class="log-text"></div>
+
+        <div class="dashboard">
+            <div class="dash-item" style="color:#ff4d4d">
+                <span class="dash-label" data-i18n="lblJudge">Judge Loss (D)</span>
+                <span class="dash-value" id="valD">0.0000</span>
+            </div>
+            <div class="dash-item" style="color:#00e676">
+                <span class="dash-label" data-i18n="lblArtist">Artist Loss (G)</span>
+                <span class="dash-value" id="valG">0.0000</span>
+            </div>
+            <div class="dash-item" style="color:#f59e0b">
+                <span class="dash-label" data-i18n="lblProb">Noise Prob.</span>
+                <span class="dash-value" id="valProb">0.0000%</span>
+            </div>
+            <div class="dash-item timer">
+                <span class="dash-label" data-i18n="lblTime">Elapsed</span>
+                <span class="dash-value" id="valTime">00:00:00</span>
+            </div>
+            <div class="dash-item etr">
+                <span class="dash-label" data-i18n="lblETR">Est. Remaining</span>
+                <span class="dash-value" id="valETR">--:--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="box grid-2">
+        <div>
+            <h3 data-i18n="saveTitle" style="margin-top:0;">Save Checkpoint</h3>
+            <p data-i18n="saveDesc" style="font-size:13px; color:#94a3b8; margin-bottom:15px;">Exports a single .zip file containing the model.</p>
+            <button id="btnSave" class="btn-success" disabled data-i18n="btnSave">💾 Export .ZIP Model</button>
+        </div>
+        <div>
+            <h3 data-i18n="loadTitle" style="margin-top:0;">Load Checkpoint</h3>
+            <p data-i18n="loadDesc" style="font-size:13px; color:#94a3b8; margin-bottom:15px;">Select the generated .zip file to restore the model.</p>
+            <input type="file" id="uploadModel" accept=".zip" style="margin-bottom:10px;">
+            <button id="btnLoad" class="btn-danger" data-i18n="btnLoad">📂 Import .ZIP Model</button>
+        </div>
+    </div>
+
+    <div class="box" style="text-align:center;">
+        <h3 data-i18n="genTitle" style="margin-top:0; border-bottom:1px solid #334155; padding-bottom:15px;">2. Inference (Generator)</h3>
+        <div class="controls-row" style="justify-content:center; max-width:600px; margin:0 auto 20px auto;">
+            <button id="btnGenerate" disabled data-i18n="btnGenerate">✨ Generate New Image</button>
+            <button id="btnUpscale" class="btn-warning" disabled data-i18n="btnUpscale">🔍 Upscale 2x</button>
+            <button id="btnDownload" class="btn-success" disabled data-i18n="btnDownload">⬇️ Download</button>
+        </div>
+        <div class="canvas-container">
+            <canvas id="outCanvas" style="width:256px; height:256px;"></canvas>
+        </div>
+    </div>
+
+    <div class="watermark-footer">made by ian pietro</div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════
+    //  TRANSLATIONS — all text on the page, video, and alerts
+    // ═══════════════════════════════════════════════════════════
+    const i18n = {
+        en: {
+            // Page
+            titleTxt: "Create and Use GANs Pro",
+            settingsTitle: "1. Training Configuration",
+            // Labels
+            lblRes: "Target Resolution",
+            lblEpochs: "Training Cycles (Epochs)",
+            lblComplexity: "NN Complexity",
+            lblDataset: "Training Dataset",
+            lblGenLR: "Generator LR",
+            lblColor: "Color Mode",
+            lblInterval: "Preview Interval",
+            lblNNCodec: "NN Image Codec",
+            lblJudgeSpeed: "⚖️ Judge LR Speed",
+            lblBlindness: "🙈 Judge Blindness",
+            lblAutoPause: "⏸️ Auto-Pause % (0=off)",
+            // Hints
+            hintJudgeSpeed: "0.1 – 2.0 · Lower = Judge learns slower",
+            hintBlindness: "0.0 – 0.70 · Higher = misses more fakes",
+            hintAutoPause: "0 – 100 · Pauses when noise prob exceeds this",
+            // Select options — complexity
+            complexBasic: "Basic (Fast)",
+            complexStandard: "Standard",
+            complexAdvanced: "Advanced (Slow)",
+            complexExtreme: "Extreme",
+            // Select options — LR
+            lrHigh: "High (0.001)",
+            lrMod: "Moderate (0.0002)",
+            lrLow: "Low (0.00005)",
+            // Select options — color
+            colorRGB: "Full RGB",
+            colorGray: "Grayscale (B&W)",
+            // Select options — codec
+            codecTanh: "tanh [-1,1] · Standard",
+            codecSigmoid: "sigmoid [0,1] · Lighter/Faster",
+            // Res option
+            opt1px: "1x1 (Pixel)",
+            // Buttons
+            btnTrain: "Initialize Training Session",
+            btnPause: "⏸️ Pause",
+            btnResume: "▶️ Resume",
+            btnSavePreview: "📸 Save Preview",
+            btnStop: "⏹️ Stop",
+            btnDownloadVideo: "🎬 Download Training Video",
+            btnSave: "💾 Export .ZIP Model",
+            btnLoad: "📂 Import .ZIP Model",
+            btnGenerate: "✨ Generate New Image",
+            btnUpscale: "🔍 Upscale 2x",
+            btnDownload: "⬇️ Download",
+            // Sections
+            saveTitle: "Save Checkpoint",
+            saveDesc: "Exports a single .zip file containing the model.",
+            loadTitle: "Load Checkpoint",
+            loadDesc: "Select the generated .zip file to restore the model.",
+            genTitle: "2. Inference (Generator)",
+            // Dashboard
+            lblJudge: "Judge Loss (D)",
+            lblArtist: "Artist Loss (G)",
+            lblProb: "Noise Prob.",
+            lblTime: "Elapsed",
+            lblETR: "Est. Remaining",
+            // Log messages
+            logWait: "Awaiting image upload or ready to train with test image...",
+            logReady: " images ready for processing.",
+            logTrain: "Training Epoch:",
+            logDone: "Training Session Complete!",
+            logSaved: "Model packed and exported to Downloads!",
+            logLoadErr: "Error: Please select a valid .zip model file.",
+            logLoadOk: "ZIP Model loaded successfully!",
+            logLoadedAlert: "Model loaded successfully!",
+            processing: "Processing dataset and building computation graph...",
+            logAutoPause: "Auto-paused: noise probability exceeded",
+            // Epoch hint
+            epochHintTpl: "Recommended: ~{rec} epochs for good quality at {res}×{res}",
+            // Video UI
+            videoPreparing: "Preparing video...",
+            videoDrawingIntro: "Drawing intro screen...",
+            videoEncoding: "Encoding frame {cur} / {total}...",
+            videoSaving: "Saving video file...",
+            videoDone: "✅ Video downloaded!",
+            // Video intro screen (drawn on canvas)
+            videoSummaryTitle: "GAN TRAINING SUMMARY",
+            videoSystemDetected: "SYSTEM DETECTED",
+            videoLabelResolution: "Resolution",
+            videoLabelEpochs: "Epochs",
+            videoLabelLearnRate: "Learn Rate",
+            videoLabelComplexity: "NN Complexity",
+            videoLabelColorMode: "Color Mode",
+            videoLabelCodec: "NN Codec",
+            videoLabelTrainTime: "Train Time",
+            videoLabelGPU: "GPU",
+            videoLabelCPU: "CPU",
+            videoLabelRAM: "RAM",
+            videoLabelOS: "OS",
+            videoLabelBrowser: "Browser",
+            // Epoch counter on each frame
+            videoEpochCounter: "Epoch {cur}/{total}",
+            // Theme picker
+            themeTitle: "Theme",
+            themeCustom: "Custom",
+            themeBackground: "Background",
+            themePanel: "Panel",
+            themeAccent: "Accent",
+            themeText: "Text",
+            themeToggleTip: "Change theme",
+            swatchBlue: "Blue (Default)",
+            swatchPurple: "Purple Dark",
+            swatchGreen: "Green Dark",
+            swatchOrange: "Orange Dark",
+            swatchRed: "Red Dark",
+            swatchCyan: "Cyan Dark",
+            swatchYellow: "Yellow Dark",
+            swatchLight: "Light",
+        },
+        pt: {
+            titleTxt: "Criar e Usar GANs Pro",
+            settingsTitle: "1. Configuração de Treinamento",
+            lblRes: "Resolução Alvo",
+            lblEpochs: "Ciclos de Treino (Épocas)",
+            lblComplexity: "Complexidade Neural",
+            lblDataset: "Conjunto de Dados (Dataset)",
+            lblGenLR: "LR do Gerador",
+            lblColor: "Modo de Cor",
+            lblInterval: "Intervalo de Prévia",
+            lblNNCodec: "Codec de Imagem NN",
+            lblJudgeSpeed: "⚖️ Velocidade do Juiz",
+            lblBlindness: "🙈 Cegueira do Juiz",
+            lblAutoPause: "⏸️ Auto-Pausa % (0=desligado)",
+            hintJudgeSpeed: "0.1 – 2.0 · Menor = Juiz aprende mais devagar",
+            hintBlindness: "0.0 – 0.70 · Maior = erra mais imagens falsas",
+            hintAutoPause: "0 – 100 · Pausa quando prob. de ruído ultrapassar",
+            complexBasic: "Básico (Rápido)",
+            complexStandard: "Padrão",
+            complexAdvanced: "Avançado (Lento)",
+            complexExtreme: "Extremo",
+            lrHigh: "Alto (0.001)",
+            lrMod: "Moderado (0.0002)",
+            lrLow: "Baixo (0.00005)",
+            colorRGB: "RGB Completo",
+            colorGray: "Escala de Cinza (P&B)",
+            codecTanh: "tanh [-1,1] · Padrão",
+            codecSigmoid: "sigmoid [0,1] · Mais Leve/Rápido",
+            opt1px: "1x1 (Pixel)",
+            btnTrain: "Inicializar Sessão de Treino",
+            btnPause: "⏸️ Pausar",
+            btnResume: "▶️ Continuar",
+            btnSavePreview: "📸 Salvar Prévia",
+            btnStop: "⏹️ Parar",
+            btnDownloadVideo: "🎬 Baixar Vídeo de Treino",
+            btnSave: "💾 Exportar Modelo .ZIP",
+            btnLoad: "📂 Importar Modelo .ZIP",
+            btnGenerate: "✨ Gerar Nova Imagem",
+            btnUpscale: "🔍 Ampliar 2x",
+            btnDownload: "⬇️ Baixar",
+            saveTitle: "Salvar Checkpoint",
+            saveDesc: "Exporta um único arquivo .zip contendo o modelo.",
+            loadTitle: "Carregar Checkpoint",
+            loadDesc: "Selecione o arquivo .zip gerado para restaurar o modelo.",
+            genTitle: "2. Inferência (Gerador)",
+            lblJudge: "Perda do Juiz (D)",
+            lblArtist: "Perda do Artista (G)",
+            lblProb: "Prob. de Ruído",
+            lblTime: "Decorrido",
+            lblETR: "Tempo Restante",
+            logWait: "Aguardando imagens ou pronto para treinar com imagem de teste...",
+            logReady: " imagens prontas para processamento.",
+            logTrain: "Treinando Época:",
+            logDone: "Sessão de Treinamento Concluída!",
+            logSaved: "Modelo empacotado em ZIP salvo nos Downloads!",
+            logLoadErr: "Erro: Por favor, selecione um arquivo de modelo .zip válido.",
+            logLoadOk: "Modelo ZIP carregado com sucesso!",
+            logLoadedAlert: "Modelo carregado com sucesso!",
+            processing: "Processando dataset e construindo grafo computacional...",
+            logAutoPause: "Auto-pausado: probabilidade de ruído ultrapassou",
+            epochHintTpl: "Recomendado: ~{rec} épocas para boa qualidade em {res}×{res}",
+            videoPreparing: "Preparando vídeo...",
+            videoDrawingIntro: "Desenhando tela de introdução...",
+            videoEncoding: "Codificando quadro {cur} / {total}...",
+            videoSaving: "Salvando arquivo de vídeo...",
+            videoDone: "✅ Vídeo baixado!",
+            videoSummaryTitle: "RESUMO DO TREINO GAN",
+            videoSystemDetected: "SISTEMA DETECTADO",
+            videoLabelResolution: "Resolução",
+            videoLabelEpochs: "Épocas",
+            videoLabelLearnRate: "Taxa de Aprendizado",
+            videoLabelComplexity: "Complexidade NN",
+            videoLabelColorMode: "Modo de Cor",
+            videoLabelCodec: "Codec NN",
+            videoLabelTrainTime: "Tempo de Treino",
+            videoLabelGPU: "GPU",
+            videoLabelCPU: "CPU",
+            videoLabelRAM: "RAM",
+            videoLabelOS: "SO",
+            videoLabelBrowser: "Navegador",
+            videoEpochCounter: "Época {cur}/{total}",
+            themeTitle: "Tema",
+            themeCustom: "Personalizado",
+            themeBackground: "Fundo",
+            themePanel: "Painel",
+            themeAccent: "Destaque",
+            themeText: "Texto",
+            themeToggleTip: "Mudar tema",
+            swatchBlue: "Azul (Padrão)",
+            swatchPurple: "Roxo Escuro",
+            swatchGreen: "Verde Escuro",
+            swatchOrange: "Laranja Escuro",
+            swatchRed: "Vermelho Escuro",
+            swatchCyan: "Ciano Escuro",
+            swatchYellow: "Amarelo Escuro",
+            swatchLight: "Claro",
+        }
+    };
+
+    let currentLang = 'en';
+    const LATENT_DIM = 100;
+    let realImagesTensor = null;
+    let generator = null, discriminator = null, gan = null;
+    let imageFiles = [];
+    let timerInterval = null;
+    let isPaused = false, isStopped = false;
+    let trainingFrames = [];
+    let trainMetaForVideo = {};
+
+    const log = document.getElementById('log');
+    const outCanvas = document.getElementById('outCanvas');
+    const ctx = outCanvas.getContext('2d');
+
+    // ─── t() — translate with optional variable substitution ─────────────────────
+    function t(key, vars) {
+        let s = (i18n[currentLang] && i18n[currentLang][key]) ? i18n[currentLang][key] : (i18n.en[key] || key);
+        if (vars) Object.keys(vars).forEach(k => { s = s.replace(new RegExp('{'+k+'}','g'), vars[k]); });
+        return s;
+    }
+
+    // ─── updateLanguage — applies ALL translations ────────────────────────────────
+    function updateLanguage() {
+        document.documentElement.lang = currentLang;
+
+        // data-i18n → innerText
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const val = i18n[currentLang][el.dataset.i18n];
+            if (val !== undefined) el.innerText = val;
+        });
+
+        // data-i18n-opt → option text
+        document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+            const val = i18n[currentLang][el.dataset.i18nOpt];
+            if (val !== undefined) el.innerText = val;
+        });
+
+        // data-i18n-title → title attribute (swatch tooltips)
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const val = i18n[currentLang][el.dataset.i18nTitle];
+            if (val !== undefined) el.title = val;
+        });
+
+        // Theme button tooltip
+        document.getElementById('themeToggleBtn').title = t('themeToggleTip');
+
+        // Epoch hint
+        updateEpochHint();
+
+        // Log idle state
+        const logEl = document.getElementById('log');
+        const enWait = i18n.en.logWait, ptWait = i18n.pt.logWait;
+        if (!logEl.innerText || logEl.innerText === enWait || logEl.innerText === ptWait) {
+            logEl.innerText = t('logWait');
+        }
+
+        // Pause button respects current state
+        const btnP = document.getElementById('btnPause');
+        if (!btnP.disabled) btnP.innerText = isPaused ? t('btnResume') : t('btnPause');
+    }
+
+    // ─── Epoch hint ───────────────────────────────────────────────────────────────
+    const epochRecs = {1:50,2:100,4:200,8:300,16:500,32:1000,64:2000,128:5000,256:10000,512:25000,1024:50000};
+    function updateEpochHint() {
+        const res = parseInt(document.getElementById('resSelect').value);
+        const rec = epochRecs[res] || 1000;
+        document.getElementById('epochHint').textContent = t('epochHintTpl', { rec: rec.toLocaleString(), res });
+    }
+    document.getElementById('resSelect').addEventListener('change', updateEpochHint);
+
+    // ─── Language selector ────────────────────────────────────────────────────────
+    document.getElementById('langSelector').addEventListener('change', e => {
+        currentLang = e.target.value;
+        updateLanguage();
+    });
+
+    // ─── Clamp inputs ─────────────────────────────────────────────────────────────
+    function clampInput(id, min, max, dec) {
+        document.getElementById(id).addEventListener('change', function() {
+            let v = parseFloat(this.value);
+            if (isNaN(v)) v = min;
+            v = Math.min(max, Math.max(min, v));
+            if (dec !== undefined) v = parseFloat(v.toFixed(dec));
+            this.value = v;
+        });
+    }
+    clampInput('judgeLRMult',    0.1, 2.0, 1);
+    clampInput('judgeDropout',   0.0, 0.7, 2);
+    clampInput('autoPauseThresh',0,   100, 0);
+
+    // ─── Upload listener ──────────────────────────────────────────────────────────
+    document.getElementById('uploadImages').addEventListener('change', e => {
+        imageFiles = e.target.files;
+        log.innerText = imageFiles.length > 0 ? imageFiles.length + t('logReady') : t('logWait');
+    });
+
+    // ─── YCbCr helpers ───────────────────────────────────────────────────────────
+    function rgbToYcbcrTensor(ten) {
+        const r=ten.slice([0,0,0],[ten.shape[0],ten.shape[1],1]),
+              g=ten.slice([0,0,1],[ten.shape[0],ten.shape[1],1]),
+              b=ten.slice([0,0,2],[ten.shape[0],ten.shape[1],1]);
+        return tf.concat([
+            r.mul(0.299).add(g.mul(0.587)).add(b.mul(0.114)),
+            r.mul(-0.168736).add(g.mul(-0.331264)).add(b.mul(0.5)).add(0.5),
+            r.mul(0.5).add(g.mul(-0.418688)).add(b.mul(-0.081312)).add(0.5)
+        ], 2);
+    }
+    function ycbcrToRgbTensor(ten) {
+        const Y=ten.slice([0,0,0],[ten.shape[0],ten.shape[1],1]),
+              Cb=ten.slice([0,0,1],[ten.shape[0],ten.shape[1],1]).sub(0.5),
+              Cr=ten.slice([0,0,2],[ten.shape[0],ten.shape[1],1]).sub(0.5);
+        return tf.concat([
+            Y.add(Cr.mul(1.402)).clipByValue(0,1),
+            Y.add(Cb.mul(-0.344136)).add(Cr.mul(-0.714136)).clipByValue(0,1),
+            Y.add(Cb.mul(1.772)).clipByValue(0,1)
+        ], 2);
+    }
+
+    // ─── Process images (OffscreenCanvas for non-blocking resize) ────────────────
+    async function processImages(imgSize, channels, colorMode) {
+        // FIX: dispose previous tensor safely before creating new one
+        if(realImagesTensor){ try{ realImagesTensor.dispose(); }catch(e){} realImagesTensor=null; }
+
+        const nnCodec = document.getElementById('nnCodecSelect').value;
+
+        // FIX: use OffscreenCanvas for resizing — keeps main thread responsive
+        const resizeViaOffscreen = async (imageBitmap) => {
+            const supportsOSC = typeof OffscreenCanvas !== 'undefined';
+            let canvas, ctx2;
+            if(supportsOSC){
+                canvas = new OffscreenCanvas(imgSize, imgSize);
+                ctx2 = canvas.getContext('2d');
+            } else {
+                canvas = document.createElement('canvas');
+                canvas.width = imgSize; canvas.height = imgSize;
+                ctx2 = canvas.getContext('2d');
+            }
+            ctx2.drawImage(imageBitmap, 0, 0, imgSize, imgSize);
+            // Extract pixel data as ImageData
+            return ctx2.getImageData(0, 0, imgSize, imgSize);
+        };
+
+        const norm = (imageData) => {
+            // FIX: pass ImageData object directly — tf.browser.fromPixels accepts it natively
+            let raw = tf.browser.fromPixels(imageData, channels);
+            const f = raw.toFloat().div(255); raw.dispose();
+            if(colorMode === 'ycbcr'){
+                const ycc = rgbToYcbcrTensor(f); f.dispose();
+                return nnCodec === 'tanh' ? ycc.mul(2).sub(1) : ycc;
+            }
+            return nnCodec === 'tanh' ? f.mul(2).sub(1) : f;
+        };
+
+        if(imageFiles.length === 0){
+            // Fallback test image
+            const fb = document.createElement('canvas'); fb.width=imgSize; fb.height=imgSize;
+            const fc = fb.getContext('2d');
+            fc.fillStyle='blue'; fc.fillRect(0,0,imgSize,imgSize);
+            fc.fillStyle='white';
+            if(imgSize>=16){ fc.font=`${Math.max(4,imgSize/6)}px Arial`; fc.fillText("test",2,imgSize/2); }
+            const idata = fc.getImageData(0,0,imgSize,imgSize);
+            const ten = norm(idata);
+            realImagesTensor = tf.stack([ten,ten,ten,ten,ten]);
+            ten.dispose();
+            return;
+        }
+
+        const tensors=[];
+        for(let i=0;i<imageFiles.length;i++){
+            // createImageBitmap is async and offloads decoding from main thread
+            const bmp = await createImageBitmap(imageFiles[i]);
+            const idata = await resizeViaOffscreen(bmp);
+            bmp.close();
+            tensors.push(norm(idata));
+            // yield to browser every image to stay responsive
+            await new Promise(r=>setTimeout(r,0));
+        }
+        let final=[...tensors];
+        if(imageFiles.length===1) final=[tensors[0],tensors[0],tensors[0],tensors[0],tensors[0]];
+        else if(imageFiles.length===9) final=[...tensors,...tensors];
+        realImagesTensor=tf.stack(final);
+        // dispose individual tensors after stacking
+        tensors.forEach(t=>t.dispose());
+    }
+
+    // ─── Build models ─────────────────────────────────────────────────────────────
+    function buildDynamicModels(targetSize, complexity, genLR, channels, judgeMult, dropout, nnCodec) {
+        if(generator){try{generator.dispose();}catch(e){}}
+        if(discriminator){try{discriminator.dispose();}catch(e){}}
+        if(gan){try{gan.dispose();}catch(e){}}
+        generator=null; discriminator=null; gan=null;
+
+        generator=tf.sequential();
+        discriminator=tf.sequential();
+
+        const startSize=Math.min(4,targetSize);
+        let numUp=0,sz=startSize;
+        while(sz<targetSize){sz*=2;numUp++;}
+
+        generator.add(tf.layers.dense({inputShape:[LATENT_DIM],units:startSize*startSize*complexity,useBias:false,kernelInitializer:'glorotUniform'}));
+        generator.add(tf.layers.batchNormalization());
+        generator.add(tf.layers.leakyReLU({alpha:0.2}));
+        generator.add(tf.layers.reshape({targetShape:[startSize,startSize,complexity]}));
+
+        let filters=complexity;
+        for(let i=0;i<numUp;i++){
+            filters=Math.max(Math.floor(filters/2),16);
+            generator.add(tf.layers.conv2dTranspose({filters,kernelSize:4,strides:2,padding:'same',useBias:false,kernelInitializer:'glorotUniform'}));
+            generator.add(tf.layers.batchNormalization());
+            generator.add(tf.layers.leakyReLU({alpha:0.2}));
+        }
+        generator.add(tf.layers.conv2d({filters:channels,kernelSize:3,padding:'same',activation:nnCodec==='sigmoid'?'sigmoid':'tanh',kernelInitializer:'glorotUniform'}));
+
+        let dF=64,dSz=targetSize;
+        discriminator.add(tf.layers.conv2d({inputShape:[targetSize,targetSize,channels],filters:dF,kernelSize:4,strides:dSz>1?2:1,padding:'same',kernelInitializer:'glorotUniform'}));
+        discriminator.add(tf.layers.leakyReLU({alpha:0.2}));
+        discriminator.add(tf.layers.dropout({rate:dropout}));
+        if(dSz>1) dSz=Math.floor(dSz/2);
+        while(dSz>4){
+            dF=Math.min(dF*2,512);
+            discriminator.add(tf.layers.conv2d({filters:dF,kernelSize:4,strides:2,padding:'same',kernelInitializer:'glorotUniform'}));
+            discriminator.add(tf.layers.batchNormalization());
+            discriminator.add(tf.layers.leakyReLU({alpha:0.2}));
+            discriminator.add(tf.layers.dropout({rate:dropout}));
+            dSz=Math.floor(dSz/2);
+        }
+        discriminator.add(tf.layers.flatten());
+        discriminator.add(tf.layers.dense({units:1,activation:'sigmoid',kernelInitializer:'glorotUniform'}));
+
+        discriminator.compile({optimizer:tf.train.adam(genLR*judgeMult*0.5,0.5),loss:'binaryCrossentropy'});
+        gan=tf.sequential(); gan.add(generator);
+        discriminator.trainable=false; gan.add(discriminator);
+        gan.compile({optimizer:tf.train.adam(genLR,0.5),loss:'binaryCrossentropy'});
+    }
+
+    function formatTime(ms){
+        if(isNaN(ms)||ms<0) return"00:00:00";
+        const s=Math.floor(ms/1000);
+        return`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+    }
+
+    function togglePauseUI(paused){
+        isPaused=paused;
+        const btnP=document.getElementById('btnPause');
+        btnP.innerText=isPaused?t('btnResume'):t('btnPause');
+        document.getElementById('btnSavePreview').disabled=!isPaused;
+        btnP.className=isPaused?'btn-success':'btn-warning';
+    }
+
+    document.getElementById('btnPause').addEventListener('click',()=>togglePauseUI(!isPaused));
+    document.getElementById('btnStop').addEventListener('click',()=>{isStopped=true;isPaused=false;});
+    document.getElementById('btnSavePreview').addEventListener('click',()=>{
+        const a=document.createElement("a");
+        a.href=outCanvas.toDataURL("image/png");
+        a.download=`preview_gan_${Date.now()}.png`; a.click();
+    });
+
+    // ─── Training ─────────────────────────────────────────────────────────────────
+    document.getElementById('btnTrain').addEventListener('click',async()=>{
+        isStopped=false; isPaused=false; trainingFrames=[];
+        const btnT=document.getElementById('btnTrain'); btnT.disabled=true;
+        ['btnPause','btnStop'].forEach(id=>{document.getElementById(id).disabled=false;});
+        ['btnGenerate','btnSave','btnUpscale','btnDownload','btnDownloadVideo'].forEach(id=>{document.getElementById(id).disabled=true;});
+        togglePauseUI(false);
+
+        const imgSize       = parseInt(document.getElementById('resSelect').value);
+        const epochs        = parseInt(document.getElementById('epochsInput').value);
+        const complexity    = parseInt(document.getElementById('complexitySelect').value);
+        const genLR         = parseFloat(document.getElementById('genLRSelect').value);
+        const colorMode     = document.getElementById('colorSelect').value;
+        const channels      = colorMode==='gray'?1:3;
+        const nnCodec       = document.getElementById('nnCodecSelect').value;
+        const previewInt    = parseInt(document.getElementById('intervalInput').value)||10;
+        const judgeMult     = parseFloat(document.getElementById('judgeLRMult').value);
+        const dropout       = parseFloat(document.getElementById('judgeDropout').value);
+
+        const cxLabels={32:t('complexBasic'),64:t('complexStandard'),128:t('complexAdvanced'),256:t('complexExtreme')};
+        const lrLabels={'0.001':t('lrHigh'),'0.0002':t('lrMod'),'0.00005':t('lrLow')};
+
+        outCanvas.width=imgSize; outCanvas.height=imgSize;
+        log.innerText=t('processing');
+        await new Promise(r=>setTimeout(r,50));
+
+        const ramGB=navigator.deviceMemory||4;
+        const fq=ramGB<2?0.5:ramGB<4?0.7:0.85;
+        const startTime=Date.now();
+
+        trainMetaForVideo={
+            resolution:`${imgSize}×${imgSize}`, totalEpochs:epochs, endedAtEpoch:epochs,
+            lr:lrLabels[String(genLR)]||String(genLR),
+            complexity:cxLabels[complexity]||String(complexity),
+            colorMode:colorMode.toUpperCase(), nnCodec, totalTime:0
+        };
+
+        let realLbl=null, fakeLbl=null, tgtLbl=null;
+        try{
+            await processImages(imgSize,channels,colorMode);
+            buildDynamicModels(imgSize,complexity,genLR,channels,judgeMult,dropout,nnCodec);
+            const N=realImagesTensor.shape[0];
+            realLbl=tf.fill([N,1],0.9);
+            fakeLbl=tf.zeros([N,1]);
+            tgtLbl =tf.ones([N,1]);
+
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval=setInterval(()=>{
+                if(!isPaused&&!isStopped) document.getElementById('valTime').innerText=formatTime(Date.now()-startTime);
+            },1000);
+
+            const normVis=ten=>nnCodec==='tanh'
+                ? ten.add(1).div(2).clipByValue(0,1)
+                : ten.clipByValue(0,1);
+
+            // FIX: captureFrame is now async and properly awaits toPixels OUTSIDE tf.tidy,
+            // so tensors are never disposed before the async GPU read completes.
+            const captureFrame=async(epochNum,totalEpochs,fakeImgs)=>{
+                let vis=null;
+                try{
+                    // Extract and normalize the tensor — keep it alive (no tidy here)
+                    const sliced=fakeImgs.slice([0,0,0,0],[1,imgSize,imgSize,channels]).squeeze();
+                    const normed=normVis(sliced);
+                    vis=colorMode==='ycbcr'?ycbcrToRgbTensor(normed):normed;
+                    if(vis!==normed) normed.dispose();
+                    sliced.dispose();
+
+                    // Render to a small canvas first (native resolution)
+                    const tmp=document.createElement('canvas'); tmp.width=imgSize; tmp.height=imgSize;
+                    await tf.browser.toPixels(vis,tmp); // awaited — no race condition
+
+                    // Scale up to 512×512 for the video frame
+                    const vc=document.createElement('canvas'); vc.width=512; vc.height=512;
+                    const vCtx=vc.getContext('2d');
+                    vCtx.imageSmoothingEnabled=false;
+                    vCtx.drawImage(tmp,0,0,512,512);
+                    vCtx.fillStyle='rgba(0,0,0,0.6)'; vCtx.fillRect(4,4,215,28);
+                    vCtx.fillStyle='#ffffff'; vCtx.font='bold 15px monospace'; vCtx.textAlign='left';
+                    vCtx.fillText(t('videoEpochCounter',{cur:epochNum,total:totalEpochs}),10,23);
+                    trainingFrames.push({dataUrl:vc.toDataURL('image/jpeg',fq),epochNum,totalEpochs});
+                }catch(e){console.warn('captureFrame error',e);}
+                finally{ if(vis) vis.dispose(); } // always clean up
+            };
+
+            let lastEpoch=0;
+            for(let epoch=0;epoch<epochs;epoch++){
+                if(isStopped) break;
+                while(isPaused) await new Promise(r=>setTimeout(r,500));
+
+                const eStart=Date.now();
+                log.innerText=`${t('logTrain')} ${epoch+1} / ${epochs}`;
+
+                const noise=tf.randomNormal([N,LATENT_DIM]);
+                const fakeImgs=generator.predict(noise);
+                discriminator.trainable=true;
+                const dLR=await discriminator.trainOnBatch(realImagesTensor,realLbl);
+                const dLF=await discriminator.trainOnBatch(fakeImgs,fakeLbl);
+                const dLoss=(dLR+dLF)/2;
+                discriminator.trainable=false;
+                const fn=tf.randomNormal([N,LATENT_DIM]);
+                const gLoss=await gan.trainOnBatch(fn,tgtLbl);
+
+                const nc=Math.min(100,Math.abs(dLoss-0.693)*100);
+                document.getElementById('valD').innerText=dLoss.toFixed(4);
+                document.getElementById('valG').innerText=gLoss.toFixed(4);
+                document.getElementById('valProb').innerText=nc.toFixed(2)+"%";
+                document.getElementById('valETR').innerText=formatTime((Date.now()-eStart)*(epochs-epoch));
+
+                const thresh=parseInt(document.getElementById('autoPauseThresh').value);
+                if(thresh>0&&nc>thresh&&!isPaused){
+                    togglePauseUI(true);
+                    log.innerText=`${t('logAutoPause')} ${thresh}%`;
+                }
+
+                if(epoch%previewInt===0||epoch===epochs-1){
+                    tf.tidy(()=>{
+                        let vis=fakeImgs.slice([0,0,0,0],[1,imgSize,imgSize,channels]).squeeze();
+                        vis=normVis(vis);
+                        if(colorMode==='ycbcr') vis=ycbcrToRgbTensor(vis);
+                        tf.browser.toPixels(vis,outCanvas);
+                    });
+                }
+
+                // FIX: await captureFrame — prevents thousands of pending async ops stacking up
+                await captureFrame(epoch+1,epochs,fakeImgs);
+                lastEpoch=epoch+1;
+                tf.dispose([noise,fakeImgs,fn]);
+                await tf.nextFrame();
+            }
+
+            clearInterval(timerInterval);
+            trainMetaForVideo.endedAtEpoch=lastEpoch;
+            trainMetaForVideo.totalTime=formatTime(Date.now()-startTime);
+            // FIX: dispose labels here too (were previously disposed inside try, missing on early stop)
+            tf.dispose([realLbl,fakeLbl,tgtLbl].filter(Boolean));
+            if(!isStopped) log.innerText=t('logDone');
+        }catch(err){
+            log.innerText="Error: "+err.message; console.error(err);
+            tf.dispose([realLbl,fakeLbl,tgtLbl].filter(Boolean));
+        }finally{
+            btnT.disabled=false;
+            ['btnPause','btnStop'].forEach(id=>{document.getElementById(id).disabled=true;});
+            document.getElementById('btnSavePreview').disabled=true;
+            ['btnGenerate','btnSave','btnUpscale','btnDownload'].forEach(id=>{document.getElementById(id).disabled=false;});
+            if(trainingFrames.length>0) document.getElementById('btnDownloadVideo').disabled=false;
+        }
+    });
+
+    // ─── Training video ───────────────────────────────────────────────────────────
+    document.getElementById('btnDownloadVideo').addEventListener('click',async()=>{
+        if(!trainingFrames.length) return;
+        document.getElementById('btnDownloadVideo').disabled=true;
+        const vbox=document.getElementById('videoProgressBox');
+        const vpTxt=document.getElementById('videoProgressTxt');
+        vbox.style.display='block';
+        vpTxt.textContent=t('videoPreparing');
+
+        const W=512,H=512,FPS=24;
+        const vc=document.createElement('canvas'); vc.width=W; vc.height=H;
+        const vCtx=vc.getContext('2d');
+
+        // Codec priority: H.265 (Safari) → VP9 (Chrome/FF) → H.264 → VP8
+        const codecMap = {
+            h265: ['video/mp4;codecs=hvc1', 'video/mp4;codecs=hev1'],
+            vp9:  ['video/webm;codecs=vp9'],
+            h264: ['video/mp4;codecs=avc1.42E01E', 'video/mp4'],
+            vp8:  ['video/webm;codecs=vp8', 'video/webm'],
+        };
+        const qualityMap = { low: 1_500_000, medium: 4_000_000, high: 8_000_000, ultra: 16_000_000 };
+
+        const chosenCodec   = document.getElementById('videoCodecSelect').value;
+        const chosenQuality = document.getElementById('videoQualitySelect').value;
+        const bitrate       = qualityMap[chosenQuality];
+
+        // Try chosen codec first, then fall back through the full list
+        const fallbackChain = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/mp4;codecs=avc1.42E01E','video/webm'];
+        const candidates    = [...(codecMap[chosenCodec] || []), ...fallbackChain];
+        const mime          = candidates.find(c=>{ try{ return MediaRecorder.isTypeSupported(c); }catch(e){ return false; } }) || 'video/webm';
+
+        const chunks=[];
+        const stream=vc.captureStream(FPS);
+        const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:bitrate});
+        rec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+        rec.start(1000); // collect every second
+
+        // Draw intro, hold 3s
+        vpTxt.textContent=t('videoDrawingIntro');
+        drawIntroScreen(vCtx,W,H,trainMetaForVideo);
+        // FIX: requestAnimationFrame ensures browser paints before MediaRecorder captures
+        await new Promise(r=>requestAnimationFrame(r));
+        await sleep(3000);
+
+        // FIX: draw each frame, wait for RAF render, THEN advance — prevents black/dropped frames
+        for(let i=0;i<trainingFrames.length;i++){
+            await drawFrame(vCtx,W,H,trainingFrames[i]);
+            vpTxt.textContent=t('videoEncoding',{cur:i+1,total:trainingFrames.length});
+            // Wait for browser to composite the new canvas pixels before moving on
+            await new Promise(r=>requestAnimationFrame(r));
+            // Small settle time at target FPS
+            await sleep(Math.round(1000/FPS));
+        }
+
+        await sleep(1000);
+        rec.stop();
+        await new Promise(r=>{rec.onstop=r;});
+
+        vpTxt.textContent=t('videoSaving');
+        const blob=new Blob(chunks,{type:mime});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        const ext=mime.includes('mp4')?'mp4':'webm';
+        a.download=`training_${Date.now()}.${ext}`;
+        a.click();
+        vpTxt.textContent=t('videoDone');
+        setTimeout(()=>{vbox.style.display='none';},3000);
+        document.getElementById('btnDownloadVideo').disabled=false;
+    });
+
+    function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+    function drawIntroScreen(vCtx,w,h,meta){
+        vCtx.fillStyle='#000'; vCtx.fillRect(0,0,w,h);
+        vCtx.textAlign='center';
+
+        vCtx.font='bold 22px "Courier New",monospace';
+        vCtx.fillStyle='#3b82f6';
+        vCtx.fillText(t('videoSummaryTitle'),w/2,55);
+
+        vCtx.font='12px "Courier New",monospace'; vCtx.fillStyle='#334155';
+        vCtx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',w/2,78);
+
+        const rows=[
+            {label:t('videoLabelResolution'), value:meta.resolution||'N/A',   color:'#f8fafc'},
+            {label:t('videoLabelEpochs'),     value:`${meta.endedAtEpoch||'?'} / ${meta.totalEpochs||'?'}`, color:'#f8fafc'},
+            {label:t('videoLabelLearnRate'),  value:meta.lr||'N/A',           color:'#f8fafc'},
+            {label:t('videoLabelComplexity'), value:meta.complexity||'N/A',   color:'#f8fafc'},
+            {label:t('videoLabelColorMode'),  value:meta.colorMode||'RGB',    color:'#fbbf24'},
+            {label:t('videoLabelCodec'),      value:meta.nnCodec||'tanh',     color:'#fbbf24'},
+            {label:t('videoLabelTrainTime'),  value:meta.totalTime||'00:00:00',color:'#c084fc'},
+        ];
+
+        let y=115;
+        rows.forEach(({label,value,color})=>{
+            const lw=140,x=w/2-lw/2;
+            vCtx.font='14px "Courier New",monospace';
+            vCtx.textAlign='right'; vCtx.fillStyle='#94a3b8';
+            vCtx.fillText(label+':',x+lw-5,y);
+            vCtx.textAlign='left'; vCtx.fillStyle=color;
+            vCtx.fillText(value,x+lw+8,y);
+            y+=27;
+        });
+
+        y+=6;
+        vCtx.font='12px "Courier New",monospace'; vCtx.fillStyle='#334155'; vCtx.textAlign='center';
+        vCtx.fillText('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',w/2,y);
+        y+=24;
+        vCtx.font='bold 13px "Courier New",monospace'; vCtx.fillStyle='#64748b';
+        vCtx.fillText(t('videoSystemDetected'),w/2,y); y+=22;
+
+        const sysRows=[
+            {label:t('videoLabelGPU'),     value:sysInfo.gpu,     color:'#10b981'},
+            {label:t('videoLabelCPU'),     value:sysInfo.cpu,     color:'#38bdf8'},
+            {label:t('videoLabelRAM'),     value:sysInfo.ram,     color:'#38bdf8'},
+            {label:t('videoLabelOS'),      value:sysInfo.os,      color:'#a3a3a3'},
+            {label:t('videoLabelBrowser'), value:sysInfo.browser, color:'#a3a3a3'},
+        ];
+        sysRows.forEach(({label,value,color})=>{
+            const lw=80,x=w/2-lw/2;
+            vCtx.font='13px "Courier New",monospace';
+            vCtx.textAlign='right'; vCtx.fillStyle='#64748b';
+            vCtx.fillText(label+':',x+lw-5,y);
+            vCtx.textAlign='left'; vCtx.fillStyle=color;
+            let val=String(value||'Unknown');
+            if(val.length>30) val=val.substring(0,28)+'…';
+            vCtx.fillText(val,x+lw+8,y); y+=22;
+        });
+
+        vCtx.font='bold 13px "Courier New",monospace'; vCtx.fillStyle='#87CEFA'; vCtx.textAlign='center';
+        vCtx.fillText('made by ian pietro',w/2,h-20);
+    }
+
+    function drawFrame(vCtx,w,h,frame){
+        return new Promise(res=>{
+            const img=new Image();
+            img.onload=()=>{
+                vCtx.drawImage(img,0,0,w,h);
+                vCtx.fillStyle='rgba(0,0,0,0.65)'; vCtx.fillRect(4,4,220,28);
+                vCtx.fillStyle='#fff'; vCtx.font='bold 14px monospace'; vCtx.textAlign='left';
+                vCtx.fillText(t('videoEpochCounter',{cur:frame.epochNum,total:frame.totalEpochs}),10,23);
+                res();
+            };
+            img.onerror=res; img.src=frame.dataUrl;
+        });
+    }
+
+    // ─── System info detection ────────────────────────────────────────────────────
+    const sysInfo={cpu:'Unknown',ram:'Unknown',os:'Unknown',browser:'Unknown',gpu:'Unknown'};
+    (function(){
+        const ua=navigator.userAgent;
+        if(/Windows NT 10/.test(ua)) sysInfo.os='Windows 10/11';
+        else if(/Windows NT/.test(ua)) sysInfo.os='Windows';
+        else if(/Mac OS X/.test(ua)) sysInfo.os='macOS';
+        else if(/Android/.test(ua)) sysInfo.os='Android';
+        else if(/iPhone|iPad/.test(ua)) sysInfo.os='iOS';
+        else if(/Linux/.test(ua)) sysInfo.os='Linux';
+        if(/Edg\//.test(ua)) sysInfo.browser='Edge '+(ua.match(/Edg\/([\d.]+)/)?.[1]||'');
+        else if(/OPR\//.test(ua)) sysInfo.browser='Opera '+(ua.match(/OPR\/([\d.]+)/)?.[1]||'');
+        else if(/Chrome\//.test(ua)) sysInfo.browser='Chrome '+(ua.match(/Chrome\/([\d.]+)/)?.[1]||'');
+        else if(/Firefox\//.test(ua)) sysInfo.browser='Firefox '+(ua.match(/Firefox\/([\d.]+)/)?.[1]||'');
+        else if(/Safari\//.test(ua)&&!/Chrome/.test(ua)) sysInfo.browser='Safari '+(ua.match(/Version\/([\d.]+)/)?.[1]||'');
+        sysInfo.cpu=navigator.hardwareConcurrency?navigator.hardwareConcurrency+' cores':'Unknown';
+        sysInfo.ram=navigator.deviceMemory?navigator.deviceMemory+' GB':'Unknown';
+        try{
+            const c=document.createElement('canvas');
+            const gl=c.getContext('webgl')||c.getContext('experimental-webgl');
+            if(gl){const ext=gl.getExtension('WEBGL_debug_renderer_info');
+                if(ext){let gpu=gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'Unknown';
+                    gpu=gpu.replace(/\s*\(.*?\)\s*/g,'').replace(/ANGLE \(/,'').replace(/\)$/,'').trim();
+                    sysInfo.gpu=gpu||'Unknown';}}
+        }catch(e){}
+    })();
+
+    // ─── Inference ────────────────────────────────────────────────────────────────
+    document.getElementById('btnGenerate').addEventListener('click',()=>{
+        if(!generator) return;
+        tf.tidy(()=>{
+            const nc=document.getElementById('nnCodecSelect').value;
+            const cm=document.getElementById('colorSelect').value;
+            const noise=tf.randomNormal([1,LATENT_DIM]);
+            let img=generator.predict(noise).squeeze();
+            // FIX: clipByValue(0,1) prevents visual artifacts from out-of-range values
+            img=nc==='tanh'?img.add(1).div(2).clipByValue(0,1):img.clipByValue(0,1);
+            if(cm==='ycbcr') img=ycbcrToRgbTensor(img);
+            tf.browser.toPixels(img,outCanvas);
+        });
+    });
+
+    document.getElementById('btnUpscale').addEventListener('click',()=>{
+        const cw=outCanvas.width;
+        const tmp=document.createElement('canvas'); tmp.width=cw; tmp.height=cw;
+        tmp.getContext('2d').drawImage(outCanvas,0,0);
+        outCanvas.width=cw*2; outCanvas.height=cw*2;
+        ctx.imageSmoothingEnabled=true;
+        ctx.drawImage(tmp,0,0,outCanvas.width,outCanvas.height);
+    });
+
+    document.getElementById('btnDownload').addEventListener('click',()=>{
+        const a=document.createElement("a");
+        a.href=outCanvas.toDataURL("image/png");
+        a.download=`gan_art_${Date.now()}.png`; a.click();
+    });
+
+    // ─── Save / Load ──────────────────────────────────────────────────────────────
+    document.getElementById('btnSave').addEventListener('click',async()=>{
+        if(!generator) return;
+        await generator.save(tf.io.withSaveHandler(async artifacts=>{
+            const zip=new JSZip();
+            const info={modelTopology:artifacts.modelTopology,format:artifacts.format,generatedBy:artifacts.generatedBy,convertedBy:artifacts.convertedBy,weightsManifest:[{paths:['model.weights.bin'],weights:artifacts.weightSpecs}]};
+            zip.file("model.json",JSON.stringify(info));
+            zip.file("model.weights.bin",artifacts.weightData);
+            const content=await zip.generateAsync({type:"blob"});
+            const a=document.createElement("a");
+            a.href=URL.createObjectURL(content);
+            a.download=`gan_model_${outCanvas.width}px.zip`; a.click();
+            return{modelArtifactsInfo:{dateSaved:new Date()}};
+        }));
+        log.innerText=t('logSaved');
+    });
+
+    document.getElementById('btnLoad').addEventListener('click',async()=>{
+        const file=document.getElementById('uploadModel').files[0];
+        if(!file||!file.name.endsWith('.zip')){alert(t('logLoadErr'));return;}
+        try{
+            log.innerText=t('processing');
+            const zip=await JSZip.loadAsync(file);
+            const jb=await zip.file("model.json").async("blob");
+            const bb=await zip.file("model.weights.bin").async("blob");
+            const loaded=await tf.loadLayersModel(tf.io.browserFiles([
+                new File([jb],"model.json",{type:"application/json"}),
+                new File([bb],"model.weights.bin",{type:"application/octet-stream"})
+            ]));
+            if(generator) generator.dispose();
+            generator=loaded;
+            const sz=generator.outputs[0].shape[1];
+            outCanvas.width=sz; outCanvas.height=sz;
+            log.innerText=t('logLoadOk');
+            ['btnGenerate','btnSave','btnUpscale','btnDownload'].forEach(id=>document.getElementById(id).disabled=false);
+            alert(t('logLoadedAlert'));
+        }catch(err){console.error(err);log.innerText="Erro: "+err.message;}
+    });
+
+    // ─── Theme Picker ─────────────────────────────────────────────────────────────
+    const thBtn=document.getElementById('themeToggleBtn');
+    const thPanel=document.getElementById('themePanel');
+    thBtn.addEventListener('click',e=>{e.stopPropagation();thPanel.classList.toggle('open');});
+    document.addEventListener('click',()=>thPanel.classList.remove('open'));
+    thPanel.addEventListener('click',e=>e.stopPropagation());
+
+    function applyTheme(bg,panel,accent,text){
+        document.documentElement.style.setProperty('--bg',bg);
+        document.documentElement.style.setProperty('--panel',panel);
+        document.documentElement.style.setProperty('--accent',accent);
+        document.documentElement.style.setProperty('--text',text||'#f8fafc');
+        document.getElementById('cpBg').value=bg;
+        document.getElementById('cpPanel').value=panel;
+        document.getElementById('cpAccent').value=accent;
+        document.getElementById('cpText').value=text||'#f8fafc';
+    }
+    document.querySelectorAll('.swatch').forEach(s=>{
+        s.addEventListener('click',()=>{
+            document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+            s.classList.add('active');
+            applyTheme(s.dataset.bg,s.dataset.panel,s.dataset.accent,s.dataset.text);
+        });
+    });
+    ['cpBg','cpPanel','cpAccent','cpText'].forEach(id=>{
+        document.getElementById(id).addEventListener('input',()=>{
+            document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+            applyTheme(document.getElementById('cpBg').value,document.getElementById('cpPanel').value,
+                       document.getElementById('cpAccent').value,document.getElementById('cpText').value);
+        });
+    });
+
+    // ─── Init ─────────────────────────────────────────────────────────────────────
+    updateLanguage();
+    </script>
+</body>
+</html>
