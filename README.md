@@ -1,18 +1,16 @@
 # gan-tool-for-browsers
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/gan_art_1772665978205.png" width="500" alt="Arte GAN Principal">
+  <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/gan_art_1772665978205.png" width="500" alt="gan art ">
 </p>
 
 <hr>
 
 <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/example.jpg" align="left" width="250" style="margin-right: 15px;">
 
-### Descrição do Projeto
-Este texto aparece ao lado da imagem de exemplo. Aqui você pode explicar como a ferramenta funciona, quais são os objetivos do seu repositório `gan-tool-for-browsers` e como as imagens acima foram geradas. 
+this is an example of how GAN's works. 
 
 O alinhamento à esquerda permite que o conteúdo textual preencha o espaço vazio, criando um visual muito mais dinâmico e profissional para a documentação do seu código.
 
-<br clear="left"/>
 
 ---
 
