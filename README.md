@@ -2,14 +2,14 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/gan_art_1772665978205.png" width="500" alt="gan art ">
 </p>
-
+this is an example
 <hr>
 
 <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/example.jpg" align="left" width="250" style="margin-right: 15px;">
 
 this is an example of how GAN's works. 
 
-O alinhamento à esquerda permite que o conteúdo textual preencha o espaço vazio, criando um visual muito mais dinâmico e profissional para a documentação do seu código.
+
 
 
 ---
