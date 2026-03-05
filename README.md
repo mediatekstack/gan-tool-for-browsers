@@ -2,7 +2,7 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/gan_art_1772665978205.png" width="500" alt="gan art ">
 </p>
-this is an example
+this is an example of an image generated with Parrot-64x64(noisy).zip. avaible on gandownload.edgeone.app 
 <hr>
 
 <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/example.jpg" align="left" width="250" style="margin-right: 15px;">
