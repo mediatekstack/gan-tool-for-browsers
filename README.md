@@ -1,7 +1,7 @@
 # gan-tool-for-browsers
 <img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/example.jpg" align="left" width="200" style="margin-right: 15px;">
 
-Este texto vai aparecer à direita da imagem. O GitHub permite que o texto preencha o espaço lateral, o que dá um aspeto de "revista" ou layout profissional ao teu README.
+example how GAN's works.
 <br clear="left"/> ```
 
 ---
