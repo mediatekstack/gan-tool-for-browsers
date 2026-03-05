@@ -22,4 +22,4 @@ in the future i will create a Discord for everyone to publish their own pre-trai
 
 
 
-Created by claude sonnet 4.6 extended and gemini 3.1 pro. Directed by mediatekstack (still in school sadly)
+***Created by*** claude sonnet 4.6 extended and gemini 3.1 pro. ***Directed by*** mediatekstack (still in school sadly)
