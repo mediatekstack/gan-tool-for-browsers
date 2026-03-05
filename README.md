@@ -1,12 +1,5 @@
 # gan-tool-for-browsers
-<img src="https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/example.jpg" align="left" width="200" style="margin-right: 15px;">
 
-example how GAN's works.
-<br clear="left"/> ```
-
-
----
- <img src=" align="left" "https://raw.githubusercontent.com/mediatekstack/gan-tool-for-browsers/main/example.jpg" width="250" style="margin-right: 15px;">
 
 This is basically a web-based but totally local GAN trainer which is coded by ai but i tried my best at making it functional and error-less and it has 2 domais : gantool.edgeone.app (the GAN trainer) and gandownload.edgeone.app (the comunity GAN's downloader and the offline version of the html ).
 in the future i will create a Discord for everyone to publish their own pre-trained GAN's 
